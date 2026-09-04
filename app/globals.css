@@ -55,6 +55,10 @@ body.dark { --bg: #0e1220; --surface: #171c2c; --surface-2: #20273a; --text: #f3
 .nw-nav-links a { opacity: .72; transition: opacity .2s ease; }
 .nw-nav-links a:hover { opacity: 1; }
 .nw-nav-cta { display: inline-flex; align-items: center; gap: 7px; padding: 11px 15px; border: 1px solid var(--nw-line); border-radius: 99px; background: rgba(255,255,255,.2); }
+.nw-nav-actions { display: flex; align-items: center; gap: 10px; }
+.nw-language-toggle { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--nw-line); border-radius: 99px; background: rgba(255,255,255,.26); }
+.nw-language-toggle button { border: 0; border-radius: 99px; padding: 6px 7px; color: #718079; background: transparent; font-size: 9px; font-weight: 900; }
+.nw-language-toggle button.active { color: var(--nw-ink); background: var(--nw-acid); }
 .nw-arrow { display: inline-block; font-size: 18px; line-height: .7; transition: transform .2s ease; }
 a:hover .nw-arrow, button:hover .nw-arrow { transform: translate(2px, -2px); }
 .nw-hero { display: grid; grid-template-columns: minmax(0, .94fr) minmax(420px, .9fr); align-items: center; min-height: 650px; gap: 48px; padding: 60px 66px 112px; }
@@ -201,6 +205,7 @@ a:hover .nw-arrow, button:hover .nw-arrow { transform: translate(2px, -2px); }
 @media (max-width: 620px) {
   .nw-nav { padding: 20px; }
   .nw-nav-links { display: none; }
+  .nw-nav-actions { gap: 6px; }
   .nw-nav-cta { padding: 9px 11px; font-size: 10px; }
   .nw-hero { min-height: 0; padding: 55px 20px 82px; }
   .nw-hero h1 { font-size: clamp(54px, 16vw, 78px); }
