@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 type Role = "worker" | "business";
 type Language = "de" | "tr";
@@ -51,6 +51,8 @@ export default function NextWerkLanding() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const c = copy[language];
+
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
 
   function submitWaitlist(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (email.trim()) setSubmitted(true); }
 
