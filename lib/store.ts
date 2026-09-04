@@ -5,8 +5,10 @@ export type UserRecord = {
   id: string;
   email: string;
   username: string;
-  passwordHash: string;
-  passwordSalt: string;
+  passwordHash?: string;
+  passwordSalt?: string;
+  googleSub?: string;
+  authProvider?: "password" | "google";
   createdAt: string;
 };
 

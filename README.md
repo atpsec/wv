@@ -40,5 +40,7 @@ npm run start:hostinger
 - Production env: `.env.hostinger.example` dosyasındaki değişkenleri Hostinger paneline ekleyin.
 - `NEXT_PUBLIC_SITE_URL=https://atpaivideo.com` olarak ayarlanmalıdır.
 - `atpaivideo.com` ana domain olarak tanımlanmalı. Uygulama `www.atpaivideo.com` isteklerini `https://atpaivideo.com` adresine 308 canonical redirect ile yönlendirir; Hostinger panelindeki domain redirect seçeneği de ek güvenlik katmanı olarak kullanılabilir.
+- Gmail/Google ile giriş için Google Cloud Console’da bir OAuth Client ID (Web application) oluşturun. Authorized redirect URI olarak tam olarak `https://atpaivideo.com/api/auth/google/callback` adresini ekleyin; ardından `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` ve `GOOGLE_REDIRECT_URI` değişkenlerini Hostinger’a ekleyin. Yerelde callback adresi `http://localhost:3000/api/auth/google/callback` olmalıdır.
+- Google akışı `state` ve PKCE ile korunur; doğrulanmış Google e-postasıyla mevcut aynı e-posta hesabı güvenli biçimde ilişkilendirilebilir. Google bilgileri veya access token kalıcı olarak saklanmaz.
 
 `DATA_DIR` dosya sistemi kalıcılığı garanti edilmiyorsa Upstash değişkenlerini ekleyin. Üretimde güçlü, benzersiz ve en az 32 karakterlik bir `SESSION_SECRET` kullanın.

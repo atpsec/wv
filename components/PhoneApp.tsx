@@ -21,12 +21,26 @@ async function responseJson(response: Response): Promise<Record<string, unknown>
 export default function PhoneApp() {
   const [theme, setTheme] = useState<Theme>("light");
   const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [googleError, setGoogleError] = useState("");
   const [tab, setTab] = useState<Tab>("home");
   const [activeTool, setActiveTool] = useState<ToolName | null>(null);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("atpaivideo-theme");
     if (savedTheme === "dark" || savedTheme === "light") window.setTimeout(() => setTheme(savedTheme), 0);
+    const googleErrorCode = new URLSearchParams(window.location.search).get("google_error");
+    if (googleErrorCode) {
+      const messages: Record<string, string> = {
+        not_configured: "Google ile giriş henüz yapılandırılmadı. Yönetici, Google OAuth bilgilerini eklemeli.",
+        cancelled: "Google ile giriş iptal edildi.",
+        invalid_state: "Google giriş oturumu doğrulanamadı. Lütfen tekrar deneyin.",
+        invalid_account: "Google hesabının doğrulanmış e-posta bilgisi alınamadı.",
+        rate_limited: "Çok fazla deneme yapıldı. Lütfen biraz sonra tekrar deneyin.",
+        provider_error: "Google ile giriş tamamlanamadı. Lütfen tekrar deneyin."
+      };
+      window.setTimeout(() => setGoogleError(messages[googleErrorCode] || messages.provider_error), 0);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
     fetch("/api/auth/me", { cache: "no-store" })
       .then(responseJson)
       .then((data) => setUser((data.user as User | null) || null))
@@ -39,7 +53,7 @@ export default function PhoneApp() {
   }, [theme]);
 
   if (user === undefined) return <PhoneShell><div className="loading">ATP Privacy Tools yükleniyor…</div></PhoneShell>;
-  if (!user) return <PhoneShell><AuthScreen onAuthenticated={setUser} /></PhoneShell>;
+  if (!user) return <PhoneShell><AuthScreen onAuthenticated={setUser} initialError={googleError} /></PhoneShell>;
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -83,13 +97,13 @@ function PhoneShell({ children }: { children: React.ReactNode }) {
   return <main className="page-stage"><section className="phone-frame"><div className="phone-screen">{children}</div></section></main>;
 }
 
-function AuthScreen({ onAuthenticated }: { onAuthenticated: (user: User) => void }) {
+function AuthScreen({ onAuthenticated, initialError }: { onAuthenticated: (user: User) => void; initialError?: string }) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError || "");
   const [busy, setBusy] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -118,6 +132,8 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (user: User) => void
       <button className={`auth-tab ${mode === "login" ? "active" : ""}`} onClick={() => { setMode("login"); setError(""); }}>Giriş yap</button>
       <button className={`auth-tab ${mode === "register" ? "active" : ""}`} onClick={() => { setMode("register"); setError(""); }}>Kayıt ol</button>
     </div>
+    <a className="google-button" href="/api/auth/google/start"><span className="google-mark">G</span> Gmail ile devam et</a>
+    <div className="auth-divider"><span>veya e-posta ile</span></div>
     <form onSubmit={submit}>
       {mode === "register" && <div className="field"><label htmlFor="username">Kullanıcı adı</label><input id="username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} required minLength={2} maxLength={32} /></div>}
       <div className="field"><label htmlFor="email">E-posta</label><input id="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></div>

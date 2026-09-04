@@ -31,6 +31,7 @@ async function hashPassword(password: string, salt = randomBytes(16).toString("h
 }
 
 async function passwordsMatch(password: string, user: UserRecord): Promise<boolean> {
+  if (!user.passwordHash || !user.passwordSalt) return false;
   const candidate = await hashPassword(password, user.passwordSalt);
   const expected = Buffer.from(user.passwordHash, "hex");
   const actual = Buffer.from(candidate.hash, "hex");
@@ -61,6 +62,51 @@ export async function loginUser(emailInput: string, password: string): Promise<P
   const users = await getCollection("users");
   const user = users.find((item) => item.email === email);
   if (!user || !(await passwordsMatch(password, user))) throw new Error("E-posta veya şifre hatalı.");
+  await createSession(user.id);
+  return publicUser(user);
+}
+
+function googleUsernameBase(displayName: string, email: string): string {
+  const display = displayName.trim().replace(/\s+/g, " ");
+  const localPart = email.split("@", 1)[0]?.replace(/[^a-zA-Z0-9._-]/g, "") || "google-user";
+  return (display || localPart).slice(0, 32);
+}
+
+function uniqueGoogleUsername(users: UserRecord[], displayName: string, email: string): string {
+  const base = googleUsernameBase(displayName, email) || "google-user";
+  const taken = new Set(users.map((item) => item.username.trim().toLowerCase()));
+  if (!taken.has(base.toLowerCase())) return base;
+  for (let counter = 2; counter < 1000; counter += 1) {
+    const suffix = ` ${counter}`;
+    const candidate = `${base.slice(0, 32 - suffix.length)}${suffix}`;
+    if (!taken.has(candidate.toLowerCase())) return candidate;
+  }
+  return `google-${randomBytes(6).toString("hex")}`;
+}
+
+export async function upsertGoogleUser(input: { sub: string; email: string; displayName: string }): Promise<PublicUser> {
+  const email = normalizeEmail(input.email);
+  const user = await updateCollection("users", async (users) => {
+    const byGoogle = users.find((item) => item.googleSub === input.sub);
+    if (byGoogle) return { value: users, result: byGoogle };
+
+    const byEmail = users.find((item) => item.email === email);
+    if (byEmail) {
+      if (byEmail.googleSub && byEmail.googleSub !== input.sub) throw new Error("Bu e-posta Google hesabıyla eşleşmiyor.");
+      const linked = { ...byEmail, googleSub: input.sub };
+      return { value: users.map((item) => item.id === byEmail.id ? linked : item), result: linked };
+    }
+
+    const created: UserRecord = {
+      id: randomUUID(),
+      email,
+      username: uniqueGoogleUsername(users, input.displayName, email),
+      googleSub: input.sub,
+      authProvider: "google",
+      createdAt: new Date().toISOString()
+    };
+    return { value: [...users, created], result: created };
+  });
   await createSession(user.id);
   return publicUser(user);
 }
