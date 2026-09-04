@@ -1,3 +1,3 @@
-import PhoneApp from "@/components/PhoneApp";
+import NextWerkLanding from "@/components/NextWerkLanding";
 
-export default function HomePage() { return <PhoneApp />; }
+export default function HomePage() { return <NextWerkLanding />; }
