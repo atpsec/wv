@@ -240,3 +240,7 @@ a:hover .nw-arrow, button:hover .nw-arrow { transform: translate(2px, -2px); }
   .nw-footer p { width: 100%; order: 3; }
   .nw-footer-note { width: 100%; margin: 0; line-height: 1.4; }
 }
+@media (max-width: 760px) and (min-width: 621px) {
+  .nw-nav-links { display: none; }
+  .nw-nav-actions { gap: 6px; }
+}
